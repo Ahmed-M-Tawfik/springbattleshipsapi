@@ -1,0 +1,27 @@
+package com.altawfik.springbattleshipsapi;
+
+import com.altawfik.springbattleshipsapi.model.Battle;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@Repository
+public class BattleRepository {
+    private final Map<UUID, Battle> battleStore;
+
+    public BattleRepository() {
+        battleStore = new HashMap<>();
+    }
+
+    public UUID newBattle() {
+        UUID newBattle = UUID.randomUUID();
+        battleStore.put(newBattle, new Battle());
+        return newBattle;
+    }
+
+    public Battle getBattle(final UUID battleId) {
+        return battleStore.get(battleId);
+    }
+}
