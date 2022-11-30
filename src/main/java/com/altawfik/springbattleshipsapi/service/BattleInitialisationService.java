@@ -1,11 +1,9 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.BattleRepository;
+import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
-import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;

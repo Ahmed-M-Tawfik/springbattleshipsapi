@@ -1,6 +1,6 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.BattleRepository;
+import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;

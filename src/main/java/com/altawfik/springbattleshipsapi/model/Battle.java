@@ -1,7 +1,5 @@
 package com.altawfik.springbattleshipsapi.model;
 
-import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
-
 public class Battle {
 
     private final Player[] players;

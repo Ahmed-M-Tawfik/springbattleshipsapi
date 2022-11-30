@@ -1,4 +1,4 @@
-package com.altawfik.springbattleshipsapi;
+package com.altawfik.springbattleshipsapi.repository;
 
 import com.altawfik.springbattleshipsapi.model.Battle;
 import org.springframework.stereotype.Repository;
