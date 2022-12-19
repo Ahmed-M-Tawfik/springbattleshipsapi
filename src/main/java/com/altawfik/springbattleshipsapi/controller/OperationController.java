@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class OperationController {
 
     @PostMapping("/initialise/{battleId}/player")
     public ResponseEntity<BaseResponse> setPlayerName(@PathVariable final UUID battleId,
-                                                      @RequestBody final PlayerSetupRequest playerSetupRequest) {
+                                                      @RequestBody @Valid final PlayerSetupRequest playerSetupRequest) {
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
         return ResponseEntity.ok(new BaseResponse());
     }

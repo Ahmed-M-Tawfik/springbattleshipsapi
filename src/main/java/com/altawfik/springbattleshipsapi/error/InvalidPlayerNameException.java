@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class InvalidPlayerNameException extends ContentException {
 
-    public InvalidPlayerNameException(final String message, final Throwable cause, final HttpStatus httpStatus, final Map<String, String> details, final String origin) {
+    InvalidPlayerNameException(final String message, final Throwable cause, final HttpStatus httpStatus, final Map<String, String> details, final String origin) {
         super(message, cause, httpStatus, details, origin);
     }
 }

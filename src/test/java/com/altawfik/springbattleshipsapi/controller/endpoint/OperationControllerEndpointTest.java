@@ -3,7 +3,8 @@ package com.altawfik.springbattleshipsapi.controller.endpoint;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.controller.OperationController;
-import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
+import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
+import com.altawfik.springbattleshipsapi.errorhandling.WebErrorHandlerConfig;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ContextConfiguration(classes = {OperationController.class, WebErrorHandlerConfig.class})
 @ActiveProfiles("test")
 @WebMvcTest(value = OperationController.class, properties = "embedded.containers.enabled=false")
 public class OperationControllerEndpointTest {
@@ -65,12 +68,12 @@ public class OperationControllerEndpointTest {
         String invalidBlankPlayerName = " ";
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_TWO, invalidBlankPlayerName);
 
-        doThrow(InvalidPlayerNameException.class).when(battleInitialisationService).initPlayer(id, playerSetupRequest);
+        doThrow(new InvalidPlayerNameExceptionBuilder(invalidBlankPlayerName).build()).when(battleInitialisationService).initPlayer(id, playerSetupRequest);
 
         mockMvc.perform(post(String.format("/battle/initialise/%s/player", id))
                                 .content(asJsonString(playerSetupRequest))
                                 .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.error.message").value("Invalid player name provided: " + invalidBlankPlayerName));
+               .andExpect(jsonPath("$.error.message").value("Invalid payload"));
     }
 }
