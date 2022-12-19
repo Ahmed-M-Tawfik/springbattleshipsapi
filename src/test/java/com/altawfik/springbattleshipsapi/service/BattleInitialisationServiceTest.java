@@ -1,10 +1,12 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.error.InvalidBattleStateException;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.model.Battle;
+import com.altawfik.springbattleshipsapi.model.BattleState;
+import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +17,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,30 +50,30 @@ class BattleInitialisationServiceTest {
         UUID uuid = UUID.randomUUID();
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
 
-        Battle mockedBattle = mock(Battle.class);
-        when(battleRepository.getBattle(uuid)).thenReturn(mockedBattle);
+        Battle battle = new Battle();
+        when(battleRepository.getBattle(uuid)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
     }
 
     @Test
     public void shouldAllowInitOfBothPlayers() {
         UUID uuid = UUID.randomUUID();
 
-        Battle mockedBattle = mock(Battle.class);
-        when(battleRepository.getBattle(uuid)).thenReturn(mockedBattle);
+        Battle battle = new Battle();
+        when(battleRepository.getBattle(uuid)).thenReturn(battle);
 
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_TWO, "playerName2");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(1, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[1].playerName()).isEqualTo(playerSetupRequest.playerName());
     }
 
     @Test
@@ -80,22 +81,22 @@ class BattleInitialisationServiceTest {
         UUID uuid = UUID.randomUUID();
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
 
-        Battle mockedBattle = mock(Battle.class);
-        when(battleRepository.getBattle(uuid)).thenReturn(mockedBattle);
+        Battle battle = new Battle();
+        when(battleRepository.getBattle(uuid)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName2");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName3");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, playerSetupRequest.playerName());
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
     }
 
     @Test
@@ -103,12 +104,12 @@ class BattleInitialisationServiceTest {
         UUID uuid = UUID.randomUUID();
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "   playerName   ");
 
-        Battle mockedBattle = mock(Battle.class);
-        when(battleRepository.getBattle(uuid)).thenReturn(mockedBattle);
+        Battle battle = new Battle();
+        when(battleRepository.getBattle(uuid)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
-        verify(mockedBattle).setPlayer(0, "playerName");
+        assertThat(battle.getPlayers()[0].playerName()).isEqualTo("playerName");
     }
 
     @Test
@@ -122,5 +123,20 @@ class BattleInitialisationServiceTest {
         assertThat(e.getMessage()).isEqualTo("Invalid player name provided:  ");
 
         verify(battleRepository, times(0)).getBattle(uuid);
+    }
+
+    @Test
+    public void givenNonInitStateWhenInitThenThrowInvalidBattleStateException() {
+        UUID uuid = UUID.randomUUID();
+        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
+
+        Battle battle = new Battle();
+        battle.setState(BattleState.Concluded);
+        when(battleRepository.getBattle(uuid)).thenReturn(battle);
+
+        var e = assertThrows(InvalidBattleStateException.class,
+                             () -> battleInitialisationService.initPlayer(uuid, playerSetupRequest));
+
+        assertThat(e.getMessage()).isEqualTo("Invalid state for operation. Current state is " + battle.getState());
     }
 }
