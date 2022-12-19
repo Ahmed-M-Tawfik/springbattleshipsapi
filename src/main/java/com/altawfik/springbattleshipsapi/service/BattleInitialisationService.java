@@ -1,11 +1,12 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
-import com.altawfik.springbattleshipsapi.model.BattleState;
-import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
+import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
+import com.altawfik.springbattleshipsapi.model.BattleState;
+import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -31,6 +32,10 @@ public class BattleInitialisationService {
         }
 
         Battle currentBattle = battleRepository.getBattle(battleId);
+        if(currentBattle == null) {
+            throw new BattleNotFoundExceptionBuilder(battleId).build();
+        }
+
         if(!currentBattle.getState().equals(BATTLE_INIT_STATE)) {
             throw new InvalidBattleStateExceptionBuilder(currentBattle.getState()).build();
         }

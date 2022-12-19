@@ -2,6 +2,7 @@ package com.altawfik.springbattleshipsapi.service;
 
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.error.BattleNotFoundException;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateException;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.model.Battle;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import java.util.UUID;
 
@@ -121,6 +123,7 @@ class BattleInitialisationServiceTest {
                              () -> battleInitialisationService.initPlayer(uuid, playerSetupRequest));
 
         assertThat(e.getMessage()).isEqualTo("Invalid player name provided:  ");
+        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         verify(battleRepository, times(0)).getBattle(uuid);
     }
@@ -138,5 +141,20 @@ class BattleInitialisationServiceTest {
                              () -> battleInitialisationService.initPlayer(uuid, playerSetupRequest));
 
         assertThat(e.getMessage()).isEqualTo("Invalid state for operation. Current state is " + battle.getState());
+        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void givenNoBattleExistsForIdWhenInitThenThrowBattleNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
+
+        when(battleRepository.getBattle(uuid)).thenReturn(null);
+
+        var e = assertThrows(BattleNotFoundException.class,
+                             () -> battleInitialisationService.initPlayer(uuid, playerSetupRequest));
+
+        assertThat(e.getMessage()).isEqualTo("Battle with UUID " + uuid + " not found");
+        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }
