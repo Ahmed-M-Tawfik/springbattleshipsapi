@@ -35,6 +35,4 @@ public class OperationController {
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
         return ResponseEntity.ok(new BaseResponse());
     }
-
-
 }

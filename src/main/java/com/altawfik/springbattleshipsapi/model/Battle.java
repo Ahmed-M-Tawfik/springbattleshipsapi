@@ -11,8 +11,8 @@ public class Battle {
         state = BattleState.Initialisation;
     }
 
-    public void setPlayer(final int playerNumber, final String playerName) {
-        players[playerNumber] = new Player(playerName);
+    public void setPlayer(final int playerNumber, final String playerName, Ship[] ships) {
+        players[playerNumber] = new Player(playerName, ships);
     }
 
     public Player[] getPlayers() {

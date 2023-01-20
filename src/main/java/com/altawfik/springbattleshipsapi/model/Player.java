@@ -1,4 +1,4 @@
 package com.altawfik.springbattleshipsapi.model;
 
-public record Player(String playerName) {
+public record Player(String playerName, Ship[] ships) {
 }

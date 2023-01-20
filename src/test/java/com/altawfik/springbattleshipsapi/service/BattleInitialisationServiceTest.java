@@ -8,6 +8,7 @@ import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
+import com.altawfik.springbattleshipsapi.service.shipconfig.SparseShipConfigurationProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,10 +32,11 @@ class BattleInitialisationServiceTest {
 
     @Mock
     private BattleRepository battleRepository;
+    private final ShipConfigurationProvider shipConfigurationProviderSpy = spy(new SparseShipConfigurationProvider());
 
     @BeforeEach
     public void setUp() {
-        battleInitialisationService = new BattleInitialisationService(battleRepository);
+        battleInitialisationService = new BattleInitialisationService(battleRepository, shipConfigurationProviderSpy);
     }
 
     @Test
@@ -58,6 +61,8 @@ class BattleInitialisationServiceTest {
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
+
+        verify(shipConfigurationProviderSpy).getShips();
     }
 
     @Test
@@ -72,10 +77,14 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
+        verify(shipConfigurationProviderSpy).getShips();
+
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_TWO, "playerName2");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
         assertThat(battle.getPlayers()[1].playerName()).isEqualTo(playerSetupRequest.playerName());
+
+        verify(shipConfigurationProviderSpy, times(2)).getShips();
     }
 
     @Test
@@ -90,15 +99,21 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
+        verify(shipConfigurationProviderSpy).getShips();
+
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName2");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
+        verify(shipConfigurationProviderSpy, times(2)).getShips();
+
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName3");
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
+
+        verify(shipConfigurationProviderSpy, times(3)).getShips();
     }
 
     @Test
@@ -112,6 +127,8 @@ class BattleInitialisationServiceTest {
         battleInitialisationService.initPlayer(uuid, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo("playerName");
+
+        verify(shipConfigurationProviderSpy).getShips();
     }
 
     @Test
@@ -126,6 +143,7 @@ class BattleInitialisationServiceTest {
         assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         verify(battleRepository, times(0)).getBattle(uuid);
+        verify(shipConfigurationProviderSpy, times(0)).getShips();
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.altawfik.springbattleshipsapi.config;
 
+import com.altawfik.springbattleshipsapi.service.ShipConfigurationProvider;
+import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MapperFeature;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -17,5 +19,10 @@ public class AppConfig {
             jackson2ObjectMapperBuilder.featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
             jackson2ObjectMapperBuilder.featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES);
         };
+    }
+
+    @Bean
+    public ShipConfigurationProvider shipConfigurationProvider() {
+        return new StandardShipConfigurationProvider();
     }
 }
