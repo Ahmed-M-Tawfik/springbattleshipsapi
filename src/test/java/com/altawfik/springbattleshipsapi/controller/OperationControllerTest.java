@@ -3,7 +3,9 @@ package com.altawfik.springbattleshipsapi.controller;
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,10 +28,12 @@ class OperationControllerTest {
 
     @Mock
     private BattleInitialisationService battleInitialisationService;
+    @Mock
+    private BattleRetrievalService battleRetrievalService;
 
     @BeforeEach
     public void setUp() {
-        controller = new OperationController(battleInitialisationService);
+        controller = new OperationController(battleInitialisationService, battleRetrievalService);
     }
 
     @Test
@@ -53,5 +58,18 @@ class OperationControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         verify(battleInitialisationService).initPlayer(id, playerSetupRequest);
+    }
+
+    @Test
+    public void shouldReturnOkWhenRetrievingExistingBattle() {
+        UUID id = UUID.randomUUID();
+
+        var battleResponseMock = mock(BattleResponse.class);
+        when(battleRetrievalService.getBattle(id)).thenReturn(battleResponseMock);
+
+        ResponseEntity<BattleResponse> response = controller.retrieveBattle(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(battleResponseMock);
     }
 }

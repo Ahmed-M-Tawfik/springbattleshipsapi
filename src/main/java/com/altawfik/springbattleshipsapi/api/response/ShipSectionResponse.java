@@ -1,17 +1,17 @@
-package com.altawfik.springbattleshipsapi.model;
+package com.altawfik.springbattleshipsapi.api.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class ShipSection implements BoardEntity {
-    private final Ship parentShip;
+public class ShipSectionResponse implements BoardEntityResponse {
+    private final ShipResponse parentShip;
     private boolean isHit;
 
-    public ShipSection(final Ship parentShip) {
+    public ShipSectionResponse(final ShipResponse parentShip) {
         this.parentShip = parentShip;
     }
 
     @JsonIgnore
-    public Ship getParentShip() {
+    public ShipResponse getParentShip() {
         return parentShip;
     }
 

@@ -2,8 +2,12 @@ package com.altawfik.springbattleshipsapi.controller;
 
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
+import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,9 +23,11 @@ import java.util.UUID;
 public class OperationController {
 
     private final BattleInitialisationService battleInitialisationService;
+    private final BattleRetrievalService battleRetrievalService;
 
-    public OperationController(final BattleInitialisationService battleInitialisationService) {
+    public OperationController(final BattleInitialisationService battleInitialisationService, final BattleRetrievalService battleRetrievalService) {
         this.battleInitialisationService = battleInitialisationService;
+        this.battleRetrievalService = battleRetrievalService;
     }
 
     @PostMapping("/allocate")
@@ -34,5 +40,10 @@ public class OperationController {
                                                       @RequestBody @Valid final PlayerSetupRequest playerSetupRequest) {
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
         return ResponseEntity.ok(new BaseResponse());
+    }
+
+    @GetMapping("/{battleId}")
+    public ResponseEntity<BattleResponse> retrieveBattle(@PathVariable final UUID battleId) {
+        return ResponseEntity.ok(battleRetrievalService.getBattle(battleId));
     }
 }

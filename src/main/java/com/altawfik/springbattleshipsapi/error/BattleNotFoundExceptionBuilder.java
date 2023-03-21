@@ -8,8 +8,10 @@ import java.util.UUID;
 
 public class BattleNotFoundExceptionBuilder extends ExceptionBuilder<BattleNotFoundExceptionBuilder> {
 
+    public static final String NOT_FOUND_MESSAGE = "Battle with UUID %s not found";
+
     public BattleNotFoundExceptionBuilder(final UUID uuid) {
-        super(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", uuid));
+        super(HttpStatus.NOT_FOUND, String.format(NOT_FOUND_MESSAGE, uuid));
     }
 
     public BattleNotFoundException build() {

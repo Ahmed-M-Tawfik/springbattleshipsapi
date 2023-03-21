@@ -2,10 +2,16 @@ package com.altawfik.springbattleshipsapi.controller.endpoint;
 
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
+import com.altawfik.springbattleshipsapi.api.response.BattleStateResponse;
+import com.altawfik.springbattleshipsapi.api.response.PlayerResponse;
 import com.altawfik.springbattleshipsapi.controller.OperationController;
+import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.WebErrorHandlerConfig;
+import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +27,7 @@ import static com.altawfik.springbattleshipsapi.controller.endpoint.ControllerEn
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -37,6 +44,8 @@ public class OperationControllerEndpointTest {
 
     @MockBean
     private BattleInitialisationService battleInitialisationService;
+    @MockBean
+    private BattleRetrievalService battleRetrievalService;
 
     @Test
     public void shouldGenerateUuidWhenAllocatingNewBattle() throws Exception {
@@ -75,5 +84,31 @@ public class OperationControllerEndpointTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath("$.error.message").value("Invalid payload"));
+    }
+
+    @Test
+    public void shouldReturnBattleRepresentationWhenBattleExists() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        BattleResponse battleResponse = BattleResponse.builder()
+                .state(BattleStateResponse.Initialisation)
+                .players(new PlayerResponse[]{new PlayerResponse("playerName", new Ship[0])}).build();
+        when(battleRetrievalService.getBattle(id)).thenReturn(battleResponse);
+
+        mockMvc.perform(get(String.format("/battle/%s", id)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("Initialisation"));
+    }
+
+    @Test
+    public void shouldThrowErrorWhenBattleDoesNotExist() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        doThrow(new BattleNotFoundExceptionBuilder(id).build()).when(battleRetrievalService).getBattle(id);
+
+        mockMvc.perform(get(String.format("/battle/%s", id)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.message").value(
+                        String.format(BattleNotFoundExceptionBuilder.NOT_FOUND_MESSAGE, id)));
     }
 }
