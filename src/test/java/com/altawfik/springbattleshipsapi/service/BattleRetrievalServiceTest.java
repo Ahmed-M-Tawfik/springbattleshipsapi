@@ -55,13 +55,11 @@ class BattleRetrievalServiceTest {
     public void shouldThrowExceptionWhenBattleDoesNotExist() {
         UUID id = UUID.randomUUID();
 
-        var expectedException = new BattleNotFoundExceptionBuilder(id).build();
-        when(battleRepository.getBattle(id)).thenThrow(expectedException);
-
         BattleNotFoundException actualException = assertThrows(BattleNotFoundException.class,
                 () -> battleRetrievalService.getBattle(id));
 
         assertThat(actualException.getMessage()).isEqualTo(String.format(BattleNotFoundExceptionBuilder.NOT_FOUND_MESSAGE, id));
+        verify(battleRepository).getBattle(id);
         verify(battleResponseMapper, times(0)).map(any());
     }
 }
