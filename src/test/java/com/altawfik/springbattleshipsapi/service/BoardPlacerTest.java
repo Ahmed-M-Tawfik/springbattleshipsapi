@@ -1,6 +1,6 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.error.BoardPositionAlreadyTakenException;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.model.Board;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.BoardEntity;
@@ -9,6 +9,7 @@ import com.altawfik.springbattleshipsapi.model.ShipOrientation;
 import com.altawfik.springbattleshipsapi.model.ShipSection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -107,13 +108,17 @@ class BoardPlacerTest {
         BoardEntity[][] grid = new BoardEntity[10][10];
         Board board = new Board(grid);
         Ship ship = createShip("Ship", 3);
-        BoardCoordinate boardCoordinate = new BoardCoordinate(5, 5);
         ShipOrientation shipOrientation = ShipOrientation.HORIZONTAL_RIGHT;
-        grid[5][6] = new ShipSection(ship); // Already occupied position
+        BoardCoordinate boardCoordinate = new BoardCoordinate(5, 5);
+        BoardCoordinate occupiedPosition = new BoardCoordinate(5, 6);
+        grid[occupiedPosition.getX()][occupiedPosition.getY()] = new ShipSection(ship); // Already occupied position
 
         // Act & Assert
-        assertThrows(BoardPositionAlreadyTakenException.class, () ->
+        var actualException = assertThrows(ContentException.class, () ->
                 boardPlacer.placeShipOnBoard(board, ship, boardCoordinate, shipOrientation));
+        assertThat(actualException.getMessage()).isEqualTo("Cannot place new entity at given position " + occupiedPosition.getX() + ", " +
+                occupiedPosition.getY() + ". Entity exists at that location.");
+        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     private Ship createShip(String shipName, int length) {

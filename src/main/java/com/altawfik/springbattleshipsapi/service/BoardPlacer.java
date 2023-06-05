@@ -1,6 +1,6 @@
 package com.altawfik.springbattleshipsapi.service;
 
-import com.altawfik.springbattleshipsapi.error.BoardPositionAlreadyTakenExceptionBuilder;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Board;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.Ship;
@@ -57,7 +57,8 @@ public class BoardPlacer {
 
     private void validateEmptyLocation(Board board, int x, int y) {
         if (board.grid()[x][y] != null) {
-            throw new BoardPositionAlreadyTakenExceptionBuilder(new BoardCoordinate(x, y)).build();
+            throw new ContentExceptionBuilder("Cannot place new entity at given position " + x + ", " +
+                    y + ". Entity exists at that location.").build();
         }
     }
 }
