@@ -3,9 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.InvalidBattleStateException;
-import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionException;
-import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
@@ -157,11 +154,11 @@ class BattleInitialisationServiceTest {
         UUID battleId = UUID.randomUUID();
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, " ");
 
-        var e = assertThrows(InvalidPlayerNameException.class,
+        var actualException = assertThrows(InvalidPlayerNameException.class,
                              () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
 
-        assertThat(e.getMessage()).isEqualTo("Invalid player name provided:  ");
-        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(actualException.getMessage()).isEqualTo("Invalid player name provided:  ");
+        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         verify(battleRepository, times(0)).getBattle(battleId);
         verify(shipConfigurationProviderSpy, times(0)).getShips();
@@ -176,11 +173,11 @@ class BattleInitialisationServiceTest {
         battle.setState(BattleState.Concluded);
         when(battleRepository.getBattle(battleId)).thenReturn(battle);
 
-        var e = assertThrows(InvalidBattleStateException.class,
+        var actualException = assertThrows(ContentException.class,
                              () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
 
-        assertThat(e.getMessage()).isEqualTo("Invalid state for operation. Current state is " + battle.getState());
-        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(actualException.getMessage()).isEqualTo("Invalid state for operation. Current state is " + battle.getState());
+        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -190,11 +187,11 @@ class BattleInitialisationServiceTest {
 
         when(battleRepository.getBattle(battleId)).thenReturn(null);
 
-        var e = assertThrows(ContentException.class,
+        var actualException = assertThrows(ContentException.class,
                              () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
 
-        assertThat(e.getMessage()).isEqualTo("Battle with UUID " + battleId + " not found");
-        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(actualException.getMessage()).isEqualTo("Battle with UUID " + battleId + " not found");
+        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -258,11 +255,13 @@ class BattleInitialisationServiceTest {
         battle.setPlayer(num.ordinal(), "someName", ships);
         when(battleRepository.getBattle(battleId)).thenReturn(battle);
 
-        InvalidBoardPositionException expectedException = new InvalidBoardPositionExceptionBuilder(battle.getBoardSize(), invalidBoardCoord).build();
+        ContentException expectedException = new ContentExceptionBuilder("Invalid board position for operation. " +
+                "Board size is " + battle.getBoardSize().x() + ", " + battle.getBoardSize().y() +
+                " and requested invalid coordinates are " + invalidBoardCoord.getX() + ", " + invalidBoardCoord.getY()).build();
         doThrow(expectedException)
                 .when(boardSizeBoundsChecker).validatePositionWithinBoardBounds(battle.getBoardSize(), invalidBoardCoord, shipOrientation, ships[shipListIndex].getShipSections().length);
 
-        InvalidBoardPositionException actualException = assertThrows(InvalidBoardPositionException.class,
+        ContentException actualException = assertThrows(ContentException.class,
                 () -> battleInitialisationService.placeShipOnBoard(battleId, num, shipPlacementRequest));
         assertThat(actualException).isSameAs(expectedException);
         assertThat(ships[shipListIndex].isPlaced()).isFalse();

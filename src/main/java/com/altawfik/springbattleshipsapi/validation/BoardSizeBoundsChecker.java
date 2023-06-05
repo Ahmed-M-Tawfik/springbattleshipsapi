@@ -1,6 +1,6 @@
 package com.altawfik.springbattleshipsapi.validation;
 
-import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionExceptionBuilder;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.BoardSize;
 import com.altawfik.springbattleshipsapi.model.ShipOrientation;
@@ -11,7 +11,9 @@ public class BoardSizeBoundsChecker {
     public void validatePositionWithinBoardBounds(BoardSize boardSize, BoardCoordinate boardCoordinate) {
         if(boardCoordinate.getX() > boardSize.x()-1 || boardCoordinate.getX() < 0 ||
                 boardCoordinate.getY() > boardSize.y()-1 || boardCoordinate.getY() < 0) {
-            throw new InvalidBoardPositionExceptionBuilder(boardSize, boardCoordinate).build();
+            throw new ContentExceptionBuilder("Invalid board position for operation. " +
+                    "Board size is " + boardSize.x() + ", " + boardSize.y() +
+                    " and requested invalid coordinates are " + boardCoordinate.getX() + ", " + boardCoordinate.getY()).build();
         }
     }
 

@@ -3,7 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
@@ -88,7 +87,7 @@ public class BattleInitialisationService {
         }
 
         if (!currentBattle.getState().equals(BATTLE_INIT_STATE)) {
-            throw new InvalidBattleStateExceptionBuilder(currentBattle.getState()).build();
+            throw new ContentExceptionBuilder("Invalid state for operation. Current state is " + currentBattle.getState()).build();
         }
         return currentBattle;
     }
