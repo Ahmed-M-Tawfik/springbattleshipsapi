@@ -158,6 +158,14 @@ public class OperationControllerEndpointTest {
         verify(battleInitialisationService).getUnplacedShips(battleId, playerNumber);
     }
 
+    @Test
+    public void startBattle() throws Exception {
+        UUID battleId = UUID.randomUUID();
+
+        mockMvc.perform(post(String.format("/battle/initialise/%s/start", battleId)))
+                .andExpect(status().isOk());
+    }
+
     private String asJsonString(final Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);

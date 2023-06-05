@@ -6,7 +6,6 @@ import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
-import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
@@ -16,8 +15,7 @@ import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Service
@@ -49,9 +47,9 @@ public class BattleInitialisationService {
             throw new InvalidPlayerNameExceptionBuilder(playerSetupRequest.playerName()).build();
         }
 
-        Battle currentBattle = validateAndRetrieveBattle(battleId);
+        Battle battle = validateAndRetrieveBattle(battleId);
 
-        currentBattle.setPlayer(playerSetupRequest.playerNumber().ordinal(),
+        battle.setPlayer(playerSetupRequest.playerNumber().ordinal(),
                                 playerSetupRequest.playerName().trim(),
                                 shipConfigurationProvider.getShips());
     }
@@ -61,14 +59,7 @@ public class BattleInitialisationService {
         Player player = battle.getPlayers()[playerNumber.ordinal()];
         Ship[] ships = player.ships();
 
-        List<Ship> unplacedShips = new ArrayList<>();
-        for (Ship ship : ships) {
-            if (!ship.isPlaced()) {
-                unplacedShips.add(ship);
-            }
-        }
-
-        return unplacedShips.toArray(new Ship[0]);
+        return Arrays.stream(ships).filter(ship -> !ship.isPlaced()).toArray(Ship[]::new);
     }
 
     public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {
@@ -102,5 +93,20 @@ public class BattleInitialisationService {
         return currentBattle;
     }
 
-    // todo: reduce exceptions to 'expected and unexpected' exceptions, or system and context exception
+    public void startBattle(UUID battleId) {
+        Battle battle = validateAndRetrieveBattle(battleId);
+        Player[] players = battle.getPlayers();
+
+        if(players[0] == null || players[1] == null) {
+            throw new ContentExceptionBuilder("Both players must be initialised").build();
+        }
+        for(Player player : players) {
+            Ship[] ships = player.ships();
+            var numOfUnplacedShips = Arrays.stream(ships).filter(ship -> !ship.isPlaced()).count();
+            if(numOfUnplacedShips > 0)
+                throw new ContentExceptionBuilder("Player " + player.playerName() + " still has ships to be placed").build();
+        }
+
+        battle.setState(BattleState.InPlay);
+    }
 }

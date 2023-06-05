@@ -20,6 +20,7 @@ import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.service.shipconfig.SparseShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
+import com.altawfik.springbattleshipsapi.service.shipconfig.TestShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -285,5 +286,76 @@ class BattleInitialisationServiceTest {
         Ship[] unplacedShips = battleInitialisationService.getUnplacedShips(battleId, playerNumber);
 
         assertThat(unplacedShips).isEqualTo(expectedShips);
+    }
+
+    @Test
+    public void startBattle_ValidBattleSetup() {
+        var shipConfig = new TestShipConfigurationProvider().setShipsPlaced();
+
+        UUID battleId = UUID.randomUUID();
+
+        Battle battle = new Battle(new BoardSize(10, 10));
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        assertDoesNotThrow(() -> battleInitialisationService.startBattle(battleId));
+    }
+
+    @Test
+    public void startBattle_PlayersNotInitialised_ThrowsException() {
+        UUID battleId = UUID.randomUUID();
+        Battle battle = new Battle(new BoardSize(10, 10));
+
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        ContentException actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
+        assertThat(actualException.getMessage()).isEqualTo("Both players must be initialised");
+
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", null);
+
+        actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
+        assertThat(actualException.getMessage()).isEqualTo("Both players must be initialised");
+
+        battle = new Battle(new BoardSize(10, 10));
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P1", null);
+
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
+        assertThat(actualException.getMessage()).isEqualTo("Both players must be initialised");
+    }
+
+    @Test
+    public void startBattle_ShipsNotPlaced_ThrowsException() {
+        var shipConfig = new TestShipConfigurationProvider();
+
+        UUID battleId = UUID.randomUUID();
+
+        // evaluate when both P1 and P2 don't have all ships placed
+        Battle battle = new Battle(new BoardSize(10, 10));
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        ContentException actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
+        assertThat(actualException.getMessage()).isEqualTo("Player P1 still has ships to be placed");
+        assertThat(battle.getState()).isEqualTo(BattleState.Initialisation);
+
+        // Now shift to evaluating P2 as P1's ships are all placed
+        shipConfig.setShipsPlaced();
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
+
+        actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
+        assertThat(actualException.getMessage()).isEqualTo("Player P2 still has ships to be placed");
+        assertThat(battle.getState()).isEqualTo(BattleState.Initialisation);
+
+        // Now ensure status changes and we can start battle
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+
+        assertDoesNotThrow(() -> battleInitialisationService.startBattle(battleId));
+        assertThat(battle.getState()).isEqualTo(BattleState.InPlay);
     }
 }

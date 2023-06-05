@@ -6,7 +6,6 @@ import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.model.Ship;
-import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.springframework.http.ResponseEntity;
@@ -63,5 +62,11 @@ public class OperationController {
     public ResponseEntity<Ship[]> getUnplacedShips(@PathVariable UUID battleId, @PathVariable PlayerNumber playerNumber) {
         Ship[] unplacedShips = battleInitialisationService.getUnplacedShips(battleId, playerNumber);
         return ResponseEntity.ok(unplacedShips);
+    }
+
+    @PostMapping("/initialise/{battleId}/start")
+    public ResponseEntity<BaseResponse> startBattle(@PathVariable UUID battleId) {
+        battleInitialisationService.startBattle(battleId);
+        return ResponseEntity.ok(new BaseResponse());
     }
 }

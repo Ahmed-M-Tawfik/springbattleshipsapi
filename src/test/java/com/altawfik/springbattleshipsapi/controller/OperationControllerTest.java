@@ -106,4 +106,12 @@ class OperationControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(expectedShips);
     }
+
+    @Test
+    public void startBattle() {
+        UUID battleId = UUID.randomUUID();
+
+        ResponseEntity<BaseResponse> response = controller.startBattle(battleId);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
 }

@@ -1,5 +1,6 @@
 package com.altawfik.springbattleshipsapi.model;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,16 +12,17 @@ public class Battle {
     private final Board[] boards;
     private final BoardSize boardSize;
 
-    private final int playerCount = 2;
+    @Getter(AccessLevel.NONE)
+    private final int maxPlayerCount = 2;
 
     private BattleState state;
 
     public Battle(BoardSize boardSize) {
-        players = new Player[playerCount];
-        boards = new Board[playerCount];
+        players = new Player[maxPlayerCount];
+        boards = new Board[maxPlayerCount];
         this.boardSize = boardSize;
 
-        for(int i = 0; i < playerCount; i++) {
+        for(int i = 0; i < maxPlayerCount; i++) {
             boards[i] = new Board(boardSize);
         }
 
