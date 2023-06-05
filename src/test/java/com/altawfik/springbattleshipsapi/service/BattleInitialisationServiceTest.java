@@ -14,6 +14,7 @@ import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.BoardSize;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.model.ShipOrientation;
+import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.service.shipconfig.SparseShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
@@ -242,5 +243,22 @@ class BattleInitialisationServiceTest {
 
         verify(battleRepository).getBattle(battleId);
         verifyNoInteractions(boardPlacer);
+    }
+
+    @Test
+    public void getUnplacedShips() {
+        UUID battleId = UUID.randomUUID();
+        PlayerNumber playerNumber = PlayerNumber.PLAYER_ONE;
+        Ship[] expectedShips = new Ship[]{new Ship("Ship1", new ShipSection[]{}, false),
+                new Ship("Ship2", new ShipSection[]{}, false)};
+
+        Battle battle = new Battle(new BoardSize(10, 10));
+        battle.setPlayer(playerNumber.ordinal(), "playerName", expectedShips);
+
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        Ship[] unplacedShips = battleInitialisationService.getUnplacedShips(battleId, playerNumber);
+
+        assertThat(unplacedShips).isEqualTo(expectedShips);
     }
 }

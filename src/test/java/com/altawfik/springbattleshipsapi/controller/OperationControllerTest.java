@@ -5,6 +5,8 @@ import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
+import com.altawfik.springbattleshipsapi.model.Ship;
+import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,5 +90,20 @@ class OperationControllerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(battleInitialisationService).placeShipOnBoard(battleId, playerNumber, shipPlacementRequest);
+    }
+
+    @Test
+    public void shouldReturnUnplacedShips() {
+        UUID battleId = UUID.randomUUID();
+        PlayerNumber playerNumber = PlayerNumber.PLAYER_ONE;
+        Ship[] expectedShips = new Ship[]{new Ship("Ship1", new ShipSection[]{}, false),
+                new Ship("Ship2", new ShipSection[]{}, false)};
+
+        when(battleInitialisationService.getUnplacedShips(battleId, playerNumber)).thenReturn(expectedShips);
+
+        ResponseEntity<Ship[]> response = controller.getUnplacedShips(battleId, playerNumber);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(expectedShips);
     }
 }

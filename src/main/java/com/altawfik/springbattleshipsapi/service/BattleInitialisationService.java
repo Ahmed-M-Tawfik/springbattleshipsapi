@@ -8,12 +8,14 @@ import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilde
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
+import com.altawfik.springbattleshipsapi.model.Player;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,7 +55,18 @@ public class BattleInitialisationService {
     }
 
     public Ship[] getUnplacedShips(final UUID battleId, final PlayerNumber playerNumber) {
-        throw new NotImplementedException();
+        Battle battle = validateAndRetrieveBattle(battleId);
+        Player player = battle.getPlayers()[playerNumber.ordinal()];
+        Ship[] ships = player.ships();
+
+        List<Ship> unplacedShips = new ArrayList<>();
+        for (Ship ship : ships) {
+            if (!ship.isPlaced()) {
+                unplacedShips.add(ship);
+            }
+        }
+
+        return unplacedShips.toArray(new Ship[0]);
     }
 
     public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {

@@ -8,6 +8,6 @@ class SpringBattleshipsApiApplicationTests {
 
     @Test
     void contextLoads() {
+        SpringBattleshipsApiApplication.main(new String[]{});
     }
-
 }
