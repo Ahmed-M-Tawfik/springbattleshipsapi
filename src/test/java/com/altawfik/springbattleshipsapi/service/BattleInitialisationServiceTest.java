@@ -3,7 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
@@ -152,12 +151,13 @@ class BattleInitialisationServiceTest {
     @Test
     public void whenInitPlayerWithBlankNameThenThrowInvalidPlayerNameException() {
         UUID battleId = UUID.randomUUID();
-        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, " ");
+        var playerName = " ";
+        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, playerName);
 
-        var actualException = assertThrows(InvalidPlayerNameException.class,
+        var actualException = assertThrows(ContentException.class,
                              () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
 
-        assertThat(actualException.getMessage()).isEqualTo("Invalid player name provided:  ");
+        assertThat(actualException.getMessage()).isEqualTo("Invalid player name provided: " + playerName);
         assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         verify(battleRepository, times(0)).getBattle(battleId);

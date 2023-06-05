@@ -7,7 +7,6 @@ import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.api.response.BattleStateResponse;
 import com.altawfik.springbattleshipsapi.api.response.PlayerResponse;
 import com.altawfik.springbattleshipsapi.controller.OperationController;
-import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.WebErrorHandlerConfig;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
@@ -78,7 +77,6 @@ public class OperationControllerEndpointTest {
                .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
 
-
         verify(battleInitialisationService).initPlayer(battleId, playerSetupRequest);
     }
 
@@ -88,7 +86,8 @@ public class OperationControllerEndpointTest {
         String invalidBlankPlayerName = " ";
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_TWO, invalidBlankPlayerName);
 
-        doThrow(new InvalidPlayerNameExceptionBuilder(invalidBlankPlayerName).build()).when(battleInitialisationService).initPlayer(battleId, playerSetupRequest);
+        doThrow(new ContentExceptionBuilder("Invalid player name provided: " + invalidBlankPlayerName).build())
+                .when(battleInitialisationService).initPlayer(battleId, playerSetupRequest);
 
         mockMvc.perform(post(String.format("/battle/initialise/%s/player", battleId))
                                 .content(asJsonString(playerSetupRequest))

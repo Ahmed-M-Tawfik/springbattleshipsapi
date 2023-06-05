@@ -3,7 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
@@ -43,7 +42,7 @@ public class BattleInitialisationService {
 
     public void initPlayer(final UUID battleId, final PlayerSetupRequest playerSetupRequest) {
         if (playerSetupRequest.playerName().isBlank()) {
-            throw new InvalidPlayerNameExceptionBuilder(playerSetupRequest.playerName()).build();
+            throw new ContentExceptionBuilder("Invalid player name provided: " + playerSetupRequest.playerName()).build();
         }
 
         Battle battle = validateAndRetrieveBattle(battleId);
