@@ -1,7 +1,9 @@
 package com.altawfik.springbattleshipsapi.api.response;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public class ShipSectionResponse implements BoardEntityResponse {
-    //private final ShipResponse parentShip;
     private boolean isHit;
 
     public ShipSectionResponse(boolean isHit) {
