@@ -58,18 +58,19 @@ public class BattleInitialisationService {
 
     public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {
         Battle battle = validateAndRetrieveBattle(battleId);
+        Ship ship = battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()];
 
         boardSizeBoundsChecker.validatePositionWithinBoardBounds(battle.getBoardSize(),
                 shipPlacementRequest.boardCoordinate(),
                 shipPlacementRequest.shipOrientation(),
-                battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()].getShipSections().length);
+                ship.getShipSections().length);
 
         boardPlacer.placeShipOnBoard(battle.getBoards()[playerNumber.ordinal()],
-                battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()],
+                ship,
                 shipPlacementRequest.boardCoordinate(),
                 shipPlacementRequest.shipOrientation());
 
-        battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()].setPlaced(true);
+        ship.setPlaced(true);
     }
 
     private Battle validateAndRetrieveBattle(final UUID battleId) {
