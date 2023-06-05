@@ -8,6 +8,8 @@ import com.altawfik.springbattleshipsapi.error.InvalidBattleStateException;
 import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionException;
 import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameException;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
@@ -212,10 +214,34 @@ class BattleInitialisationServiceTest {
         assertDoesNotThrow(() -> battleInitialisationService.placeShipOnBoard(battleId, num, shipPlacementRequest));
         assertThat(ships[shipListIndex].isPlaced()).isTrue();
 
-        verify(battleRepository).getBattle(battleId);
         verify(boardSizeBoundsChecker).validatePositionWithinBoardBounds(battle.getBoardSize(), validBoardCoord, shipOrientation,
                 ships[shipListIndex].getShipSections().length);
         verify(boardPlacer).placeShipOnBoard(battle.getBoards()[num.ordinal()], ships[shipListIndex], validBoardCoord, shipOrientation);
+    }
+
+    @Test
+    public void placeShipOnBoard_ShipAlreadyPlaced_ExceptionThrown() {
+        UUID battleId = UUID.randomUUID();
+        PlayerNumber num = PlayerNumber.PLAYER_ONE;
+        var invalidBoardCoord = new BoardCoordinate(0, 0);
+        ShipOrientation shipOrientation = ShipOrientation.HORIZONTAL_LEFT;
+        int shipListIndex = 0;
+        var shipPlacementRequest = new ShipPlacementRequest(shipListIndex, shipOrientation, invalidBoardCoord);
+
+        Battle battle = new Battle(new BoardSize(9, 9));
+        Ship[] ships = new StandardShipConfigurationProvider().getShips();
+        ships[shipListIndex].setPlaced(true);
+        battle.setPlayer(num.ordinal(), "someName", ships);
+        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+
+        ContentException expectedException = new ContentExceptionBuilder("Ship already placed: " + ships[shipListIndex].getShipName()).build();
+        ContentException actualException = assertThrows(ContentException.class,
+                () -> battleInitialisationService.placeShipOnBoard(battleId, num, shipPlacementRequest));
+        assertThat(actualException.getHttpStatus()).isEqualTo(expectedException.getHttpStatus());
+        assertThat(actualException.getMessage()).isEqualTo(expectedException.getMessage());
+
+        verifyNoInteractions(boardSizeBoundsChecker);
+        verifyNoInteractions(boardPlacer);
     }
 
     @Test
@@ -241,7 +267,6 @@ class BattleInitialisationServiceTest {
         assertThat(actualException).isSameAs(expectedException);
         assertThat(ships[shipListIndex].isPlaced()).isFalse();
 
-        verify(battleRepository).getBattle(battleId);
         verifyNoInteractions(boardPlacer);
     }
 

@@ -6,6 +6,8 @@ import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.model.Player;
@@ -72,6 +74,8 @@ public class BattleInitialisationService {
     public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {
         Battle battle = validateAndRetrieveBattle(battleId);
         Ship ship = battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()];
+        if(ship.isPlaced())
+            throw new ContentExceptionBuilder("Ship already placed: " + ship.getShipName()).build();
 
         boardSizeBoundsChecker.validatePositionWithinBoardBounds(battle.getBoardSize(),
                 shipPlacementRequest.boardCoordinate(),
