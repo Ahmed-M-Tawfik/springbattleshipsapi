@@ -3,7 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundException;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateException;
 import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionException;
 import com.altawfik.springbattleshipsapi.error.InvalidBoardPositionExceptionBuilder;
@@ -191,7 +190,7 @@ class BattleInitialisationServiceTest {
 
         when(battleRepository.getBattle(battleId)).thenReturn(null);
 
-        var e = assertThrows(BattleNotFoundException.class,
+        var e = assertThrows(ContentException.class,
                              () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
 
         assertThat(e.getMessage()).isEqualTo("Battle with UUID " + battleId + " not found");

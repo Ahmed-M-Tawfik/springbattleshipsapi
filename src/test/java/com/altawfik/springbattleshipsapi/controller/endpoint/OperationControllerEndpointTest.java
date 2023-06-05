@@ -7,9 +7,9 @@ import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.api.response.BattleStateResponse;
 import com.altawfik.springbattleshipsapi.api.response.PlayerResponse;
 import com.altawfik.springbattleshipsapi.controller.OperationController;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.WebErrorHandlerConfig;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.model.ShipOrientation;
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -114,12 +115,13 @@ public class OperationControllerEndpointTest {
     public void shouldThrowErrorWhenBattleDoesNotExist() throws Exception {
         UUID battleId = UUID.randomUUID();
 
-        doThrow(new BattleNotFoundExceptionBuilder(battleId).build()).when(battleRetrievalService).getBattle(battleId);
+        doThrow(new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build())
+                .when(battleRetrievalService).getBattle(battleId);
 
         mockMvc.perform(get(String.format("/battle/%s", battleId)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.message").value(
-                        String.format(BattleNotFoundExceptionBuilder.NOT_FOUND_MESSAGE, battleId)));
+                        String.format("Battle with UUID %s not found", battleId)));
     }
 
     @Test

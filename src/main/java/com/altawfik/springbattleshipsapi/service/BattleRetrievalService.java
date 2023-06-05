@@ -2,11 +2,11 @@ package com.altawfik.springbattleshipsapi.service;
 
 import com.altawfik.springbattleshipsapi.api.mapper.BattleToBattleResponseMapper;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundException;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class BattleRetrievalService {
     public BattleResponse getBattle(UUID battleId) {
         Battle retrievedBattle = battleRepository.getBattle(battleId);
         if(retrievedBattle == null) {
-            throw new BattleNotFoundExceptionBuilder(battleId).build();
+            throw new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build();
         }
         return battleResponseMapper.map(retrievedBattle);
     }

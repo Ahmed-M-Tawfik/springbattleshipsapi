@@ -3,7 +3,6 @@ package com.altawfik.springbattleshipsapi.service;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
@@ -13,6 +12,7 @@ import com.altawfik.springbattleshipsapi.model.Player;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -84,7 +84,7 @@ public class BattleInitialisationService {
     private Battle validateAndRetrieveBattle(final UUID battleId) {
         Battle currentBattle = battleRepository.getBattle(battleId);
         if (currentBattle == null) {
-            throw new BattleNotFoundExceptionBuilder(battleId).build();
+            throw new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build();
         }
 
         if (!currentBattle.getState().equals(BATTLE_INIT_STATE)) {

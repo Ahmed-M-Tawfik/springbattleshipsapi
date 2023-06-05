@@ -1,8 +1,8 @@
 package com.altawfik.springbattleshipsapi.errorhandling.controller;
 
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
-import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.AccessDeniedExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.BindingResultExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.ExpectedExceptionMapper;
@@ -59,8 +59,8 @@ class BaseErrorHandlerControllerTest {
 
     @Test
     void handleContentException() {
-        UUID id = UUID.randomUUID();
-        ContentException contentException = new BattleNotFoundExceptionBuilder(id).build();
+        UUID battleId = UUID.randomUUID();
+        ContentException contentException = new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build();
 
         BaseResponse baseResponse = new BaseResponse(new AppError());
         when(expectedExceptionMapper.map(contentException)).thenReturn(baseResponse);
