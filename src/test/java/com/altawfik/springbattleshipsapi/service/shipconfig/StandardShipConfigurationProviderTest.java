@@ -12,6 +12,6 @@ class StandardShipConfigurationProviderTest {
         Ship[] shipsResult = new StandardShipConfigurationProvider().getShips();
 
         assertThat(shipsResult).hasSize(5);
-        assertThat(shipsResult[4].shipName()).isEqualTo("Aircraft Carrier");
+        assertThat(shipsResult[4].getShipName()).isEqualTo("Aircraft Carrier");
     }
 }

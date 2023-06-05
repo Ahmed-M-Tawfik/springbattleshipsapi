@@ -3,6 +3,7 @@ package com.altawfik.springbattleshipsapi.controller;
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
@@ -71,5 +72,21 @@ class OperationControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isSameAs(battleResponseMock);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void placeShipOnBoard_ValidPlacement() {
+        // Arrange
+        UUID battleId = UUID.randomUUID();
+        PlayerNumber playerNumber = PlayerNumber.PLAYER_ONE;
+        ShipPlacementRequest shipPlacementRequest = null; // can't mock, and inconsequential
+
+        // Act
+        ResponseEntity<BaseResponse> response = controller.placeShipOnBoard(battleId, playerNumber, shipPlacementRequest);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(battleInitialisationService).placeShipOnBoard(battleId, playerNumber, shipPlacementRequest);
     }
 }

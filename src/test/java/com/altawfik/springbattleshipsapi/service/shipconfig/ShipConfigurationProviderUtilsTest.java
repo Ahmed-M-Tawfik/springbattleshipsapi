@@ -14,7 +14,7 @@ class ShipConfigurationProviderUtilsTest {
 
         Ship shipResult = ShipConfigurationProviderUtils.populateShip(shipName, numberOfShipSections);
 
-        assertThat(shipResult.shipName()).isEqualTo(shipName);
-        assertThat(shipResult.shipSections().length).isEqualTo(numberOfShipSections);
+        assertThat(shipResult.getShipName()).isEqualTo(shipName);
+        assertThat(shipResult.getShipSections().length).isEqualTo(numberOfShipSections);
     }
 }

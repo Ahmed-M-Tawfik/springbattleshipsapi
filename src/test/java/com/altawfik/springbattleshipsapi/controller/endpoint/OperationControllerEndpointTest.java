@@ -12,6 +12,7 @@ import com.altawfik.springbattleshipsapi.errorhandling.WebErrorHandlerConfig;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static com.altawfik.springbattleshipsapi.controller.endpoint.ControllerEndpointTestUtils.asJsonString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -110,5 +110,13 @@ public class OperationControllerEndpointTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.message").value(
                         String.format(BattleNotFoundExceptionBuilder.NOT_FOUND_MESSAGE, id)));
+    }
+
+    static String asJsonString(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,4 +1,4 @@
 package com.altawfik.springbattleshipsapi.api.response;
 
-public interface BoardEntityResponse {
+public record BoardSizeResponse(int x, int y) {
 }

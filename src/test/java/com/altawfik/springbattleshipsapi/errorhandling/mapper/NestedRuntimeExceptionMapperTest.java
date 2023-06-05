@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.NestedRuntimeException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class NestedRuntimeExceptionMapperTest {
 
     @Test
@@ -16,10 +18,10 @@ public class NestedRuntimeExceptionMapperTest {
             // Create a subclass of NestedRuntimeException for testing purposes
         };
         BaseResponse result = mapper.map(nestedException);
-        Assertions.assertEquals(result.getError().getHttpStatusCode(), 400);
-        Assertions.assertEquals(result.getError().getMessage(), "Invalid payload");
-        Assertions.assertEquals(result.getError().getOrigin(), "PAYLOAD_API_VALIDATOR");
-        Assertions.assertEquals(result.getError().getDetails().get("rootCause"), "Test message");
+        assertEquals(result.getError().getHttpStatusCode(), 400);
+        assertEquals(result.getError().getMessage(), "Invalid payload");
+        assertEquals(result.getError().getOrigin(), "PAYLOAD_API_VALIDATOR");
+        assertEquals(result.getError().getDetails().get("rootCause"), "Test message");
     }
 
     @Test
@@ -29,9 +31,9 @@ public class NestedRuntimeExceptionMapperTest {
             // Create a subclass of NestedRuntimeException for testing purposes
         };
         BaseResponse result = mapper.map(exception);
-        Assertions.assertEquals(result.getError().getHttpStatusCode(), 400);
-        Assertions.assertEquals(result.getError().getMessage(), "Invalid payload");
-        Assertions.assertEquals(result.getError().getOrigin(), "PAYLOAD_API_VALIDATOR");
-        Assertions.assertEquals(result.getError().getDetails().get("rootCause"), "Test message");
+        assertEquals(result.getError().getHttpStatusCode(), 400);
+        assertEquals(result.getError().getMessage(), "Invalid payload");
+        assertEquals(result.getError().getOrigin(), "PAYLOAD_API_VALIDATOR");
+        assertEquals(result.getError().getDetails().get("rootCause"), "Test message");
     }
 }

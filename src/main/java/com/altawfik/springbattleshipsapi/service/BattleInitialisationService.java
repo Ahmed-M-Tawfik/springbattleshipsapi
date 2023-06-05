@@ -2,6 +2,7 @@ package com.altawfik.springbattleshipsapi.service;
 
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
+import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.error.BattleNotFoundExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidBattleStateExceptionBuilder;
 import com.altawfik.springbattleshipsapi.error.InvalidPlayerNameExceptionBuilder;
@@ -9,6 +10,7 @@ import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
+import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +23,17 @@ public class BattleInitialisationService {
 
     private final BattleRepository battleRepository;
     private final ShipConfigurationProvider shipConfigurationProvider;
+    private final BoardPlacer boardPlacer;
+    private final BoardSizeBoundsChecker boardSizeBoundsChecker;
 
-    public BattleInitialisationService(final BattleRepository battleRepository, final ShipConfigurationProvider shipConfigurationProvider) {
+    public BattleInitialisationService(final BattleRepository battleRepository,
+                                       final ShipConfigurationProvider shipConfigurationProvider,
+                                       final BoardPlacer boardPlacer,
+                                       final BoardSizeBoundsChecker boardSizeBoundsChecker) {
         this.battleRepository = battleRepository;
         this.shipConfigurationProvider = shipConfigurationProvider;
+        this.boardPlacer = boardPlacer;
+        this.boardSizeBoundsChecker = boardSizeBoundsChecker;
     }
 
     public UUID newBattle() {
@@ -47,6 +56,22 @@ public class BattleInitialisationService {
         throw new NotImplementedException();
     }
 
+    public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {
+        Battle battle = validateAndRetrieveBattle(battleId);
+
+        boardSizeBoundsChecker.validatePositionWithinBoardBounds(battle.getBoardSize(),
+                shipPlacementRequest.boardCoordinate(),
+                shipPlacementRequest.shipOrientation(),
+                battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()].getShipSections().length);
+
+        boardPlacer.placeShipOnBoard(battle.getBoards()[playerNumber.ordinal()],
+                battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()],
+                shipPlacementRequest.boardCoordinate(),
+                shipPlacementRequest.shipOrientation());
+
+        battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()].setPlaced(true);
+    }
+
     private Battle validateAndRetrieveBattle(final UUID battleId) {
         Battle currentBattle = battleRepository.getBattle(battleId);
         if (currentBattle == null) {
@@ -58,4 +83,6 @@ public class BattleInitialisationService {
         }
         return currentBattle;
     }
+
+    // todo: reduce exceptions to 'expected and unexpected' exceptions, or system and context exception
 }

@@ -60,6 +60,6 @@ class BattleRetrievalServiceTest {
 
         assertThat(actualException.getMessage()).isEqualTo(String.format(BattleNotFoundExceptionBuilder.NOT_FOUND_MESSAGE, id));
         verify(battleRepository).getBattle(id);
-        verify(battleResponseMapper, times(0)).map(any());
+        verify(battleResponseMapper, times(0)).map(any(Battle.class));
     }
 }

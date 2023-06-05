@@ -1,6 +1,7 @@
 package com.altawfik.springbattleshipsapi.repository;
 
 import com.altawfik.springbattleshipsapi.model.Battle;
+import com.altawfik.springbattleshipsapi.model.BoardSize;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -17,7 +18,8 @@ public class BattleRepository {
 
     public UUID newBattle() {
         UUID newBattle = UUID.randomUUID();
-        battleStore.put(newBattle, new Battle());
+        BoardSize boardSize = new BoardSize(5, 5);
+        battleStore.put(newBattle, new Battle(boardSize));
         return newBattle;
     }
 

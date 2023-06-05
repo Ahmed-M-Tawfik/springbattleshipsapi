@@ -1,4 +1,16 @@
 package com.altawfik.springbattleshipsapi.model;
 
-public record Ship(String shipName, ShipSection[] shipSections) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class Ship {
+    private final String shipName;
+    private final ShipSection[] shipSections;
+    private boolean placed;
+
+    public Ship(String shipName, ShipSection[] shipSections) {
+        this(shipName, shipSections, false);
+    }
 }

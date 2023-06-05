@@ -1,4 +1,4 @@
 package com.altawfik.springbattleshipsapi.model;
 
-public interface BoardEntity {
+public record BoardSize(int x, int y) {
 }

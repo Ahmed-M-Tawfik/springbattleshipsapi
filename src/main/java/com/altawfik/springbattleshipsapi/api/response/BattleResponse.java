@@ -16,6 +16,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 public class BattleResponse extends BaseResponse {
     private final PlayerResponse[] players;
+    private final BoardResponse[] boards;
+    private final BoardSizeResponse boardSize;
     private final BattleStateResponse state;
 
     public PlayerResponse[] getPlayers() {

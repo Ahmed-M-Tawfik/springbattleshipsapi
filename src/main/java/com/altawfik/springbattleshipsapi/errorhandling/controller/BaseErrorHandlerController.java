@@ -1,14 +1,16 @@
 package com.altawfik.springbattleshipsapi.errorhandling.controller;
 
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
+import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.AccessDeniedExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.BindingResultExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.ExpectedExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.NestedRuntimeExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.mapper.UnexpectedExceptionMapper;
 import com.altawfik.springbattleshipsapi.errorhandling.model.AppError;
-import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.errorhandling.model.ErrorEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -27,6 +29,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @ControllerAdvice
 public class BaseErrorHandlerController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseErrorHandlerController.class);
 
     private final UnexpectedExceptionMapper unexpectedExceptionMapper;
     private final ExpectedExceptionMapper expectedExceptionMapper;
@@ -122,6 +126,7 @@ public class BaseErrorHandlerController {
 
     protected void publishErrorEvent(final AppError error, final Throwable throwable) {
         var errorEvent = new ErrorEvent(error, throwable);
+        LOGGER.error(throwable.getMessage(), throwable);
         publisher.publishEvent(errorEvent);
     }
 }
