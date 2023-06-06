@@ -2,8 +2,8 @@ package com.altawfik.springbattleshipsapi.api.mapper;
 
 import com.altawfik.springbattleshipsapi.api.response.BoardEntityResponse;
 import com.altawfik.springbattleshipsapi.api.response.ShipSectionResponse;
-import com.altawfik.springbattleshipsapi.model.BoardEntity;
-import com.altawfik.springbattleshipsapi.model.ShipSection;
+import com.altawfik.springbattleshipsapi.model.boardentity.BoardEntity;
+import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 

@@ -1,5 +1,6 @@
-package com.altawfik.springbattleshipsapi.model;
+package com.altawfik.springbattleshipsapi.model.boardentity;
 
+import com.altawfik.springbattleshipsapi.model.Ship;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;

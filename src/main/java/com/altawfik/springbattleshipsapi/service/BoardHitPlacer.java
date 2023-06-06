@@ -2,9 +2,9 @@ package com.altawfik.springbattleshipsapi.service;
 
 import com.altawfik.springbattleshipsapi.model.Board;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
-import com.altawfik.springbattleshipsapi.model.BoardEntity;
-import com.altawfik.springbattleshipsapi.model.Miss;
-import com.altawfik.springbattleshipsapi.model.ShipSection;
+import com.altawfik.springbattleshipsapi.model.boardentity.BoardEntity;
+import com.altawfik.springbattleshipsapi.model.boardentity.Miss;
+import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;

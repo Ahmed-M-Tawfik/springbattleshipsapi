@@ -1,5 +1,6 @@
 package com.altawfik.springbattleshipsapi.model;
 
+import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

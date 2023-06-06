@@ -1,7 +1,7 @@
 package com.altawfik.springbattleshipsapi.service.shipconfig;
 
 import com.altawfik.springbattleshipsapi.model.Ship;
-import com.altawfik.springbattleshipsapi.model.ShipSection;
+import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
 
 class ShipConfigurationProviderUtils {
     static Ship populateShip(String shipName, int numberOfShipSections) {
