@@ -1,13 +1,16 @@
 package com.altawfik.springbattleshipsapi.controller;
 
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
+import com.altawfik.springbattleshipsapi.api.request.PlayRoundRequest;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
+import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattlePlayService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,10 +36,12 @@ class OperationControllerTest {
     private BattleInitialisationService battleInitialisationService;
     @Mock
     private BattleRetrievalService battleRetrievalService;
+    @Mock
+    private BattlePlayService battlePlayService;
 
     @BeforeEach
     public void setUp() {
-        controller = new OperationController(battleInitialisationService, battleRetrievalService);
+        controller = new OperationController(battleInitialisationService, battleRetrievalService, battlePlayService);
     }
 
     @Test
@@ -110,8 +115,27 @@ class OperationControllerTest {
     @Test
     public void startBattle() {
         UUID battleId = UUID.randomUUID();
+        BattleResponse battleResponse = new BattleResponse(null, null, null, null); // unneeded values
+        when(battleRetrievalService.getBattle(battleId)).thenReturn(battleResponse);
 
-        ResponseEntity<BaseResponse> response = controller.startBattle(battleId);
+        ResponseEntity<BattleResponse> response = controller.startBattle(battleId);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(battleResponse);
+
+        verify(battleInitialisationService).startBattle(battleId);
+    }
+
+    @Test
+    public void playRound() {
+        UUID battleId = UUID.randomUUID();
+        var playRoundRequest = new PlayRoundRequest(PlayerNumber.PLAYER_ONE, new BoardCoordinate(1, 1));
+        BattleResponse battleResponse = new BattleResponse(null, null, null, null); // unneeded values
+        when(battleRetrievalService.getBattle(battleId)).thenReturn(battleResponse);
+
+        ResponseEntity<BattleResponse> response = controller.playRound(battleId, playRoundRequest);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(battleResponse);
+
+        verify(battlePlayService).playRound(battleId, playRoundRequest);
     }
 }

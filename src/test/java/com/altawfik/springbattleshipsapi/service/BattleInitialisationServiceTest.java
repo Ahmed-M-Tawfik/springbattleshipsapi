@@ -44,6 +44,8 @@ class BattleInitialisationServiceTest {
     @Mock
     private BattleRepository battleRepository;
     @Mock
+    private BattleValidatorRetriever battleValidatorRetriever;
+    @Mock
     private BoardPlacer boardPlacer;
     @Mock
     private BoardSizeBoundsChecker boardSizeBoundsChecker;
@@ -52,7 +54,10 @@ class BattleInitialisationServiceTest {
 
     @BeforeEach
     public void setUp() {
-        battleInitialisationService = new BattleInitialisationService(battleRepository, shipConfigurationProviderSpy, boardPlacer,
+        battleInitialisationService = new BattleInitialisationService(battleRepository,
+                battleValidatorRetriever,
+                shipConfigurationProviderSpy,
+                boardPlacer,
                 boardSizeBoundsChecker);
     }
 
@@ -73,7 +78,7 @@ class BattleInitialisationServiceTest {
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
 
         Battle battle = new Battle(new BoardSize(9, 9));
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
@@ -87,7 +92,7 @@ class BattleInitialisationServiceTest {
         UUID battleId = UUID.randomUUID();
 
         Battle battle = new Battle(new BoardSize(9, 9));
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
@@ -110,7 +115,7 @@ class BattleInitialisationServiceTest {
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
 
         Battle battle = new Battle(new BoardSize(9, 9));
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
@@ -139,7 +144,7 @@ class BattleInitialisationServiceTest {
         PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "   playerName   ");
 
         Battle battle = new Battle(new BoardSize(9, 9));
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
@@ -165,36 +170,6 @@ class BattleInitialisationServiceTest {
     }
 
     @Test
-    public void givenNonInitStateWhenInitPlayerThenThrowInvalidBattleStateException() {
-        UUID battleId = UUID.randomUUID();
-        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
-
-        Battle battle = new Battle(new BoardSize(9, 9));
-        battle.setState(BattleState.Concluded);
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
-
-        var actualException = assertThrows(ContentException.class,
-                             () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
-
-        assertThat(actualException.getMessage()).isEqualTo("Invalid state for operation. Current state is " + battle.getState());
-        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    public void givenNoBattleExistsForIdWhenInitPlayerThenThrowBattleNotFoundException() {
-        UUID battleId = UUID.randomUUID();
-        PlayerSetupRequest playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName");
-
-        when(battleRepository.getBattle(battleId)).thenReturn(null);
-
-        var actualException = assertThrows(ContentException.class,
-                             () -> battleInitialisationService.initPlayer(battleId, playerSetupRequest));
-
-        assertThat(actualException.getMessage()).isEqualTo("Battle with UUID " + battleId + " not found");
-        assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
     public void placeShipOnBoard_ValidPlacement_NoExceptionsThrown() {
         UUID battleId = UUID.randomUUID();
         PlayerNumber num = PlayerNumber.PLAYER_ONE;
@@ -206,7 +181,7 @@ class BattleInitialisationServiceTest {
         Battle battle = new Battle(new BoardSize(9, 9));
         Ship[] ships = new StandardShipConfigurationProvider().getShips();
         battle.setPlayer(num.ordinal(), "someName", ships);
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         assertDoesNotThrow(() -> battleInitialisationService.placeShipOnBoard(battleId, num, shipPlacementRequest));
         assertThat(ships[shipListIndex].isPlaced()).isTrue();
@@ -229,7 +204,7 @@ class BattleInitialisationServiceTest {
         Ship[] ships = new StandardShipConfigurationProvider().getShips();
         ships[shipListIndex].setPlaced(true);
         battle.setPlayer(num.ordinal(), "someName", ships);
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         ContentException expectedException = new ContentExceptionBuilder("Ship already placed: " + ships[shipListIndex].getShipName()).build();
         ContentException actualException = assertThrows(ContentException.class,
@@ -253,7 +228,7 @@ class BattleInitialisationServiceTest {
         Battle battle = new Battle(new BoardSize(9, 9));
         Ship[] ships = new StandardShipConfigurationProvider().getShips();
         battle.setPlayer(num.ordinal(), "someName", ships);
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         ContentException expectedException = new ContentExceptionBuilder("Invalid board position for operation. " +
                 "Board size is " + battle.getBoardSize().x() + ", " + battle.getBoardSize().y() +
@@ -279,7 +254,7 @@ class BattleInitialisationServiceTest {
         Battle battle = new Battle(new BoardSize(10, 10));
         battle.setPlayer(playerNumber.ordinal(), "playerName", expectedShips);
 
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         Ship[] unplacedShips = battleInitialisationService.getUnplacedShips(battleId, playerNumber);
 
@@ -296,7 +271,7 @@ class BattleInitialisationServiceTest {
         battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
         battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
 
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         assertDoesNotThrow(() -> battleInitialisationService.startBattle(battleId));
     }
@@ -306,7 +281,7 @@ class BattleInitialisationServiceTest {
         UUID battleId = UUID.randomUUID();
         Battle battle = new Battle(new BoardSize(10, 10));
 
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         ContentException actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
         assertThat(actualException.getMessage()).isEqualTo("Both players must be initialised");
@@ -319,7 +294,7 @@ class BattleInitialisationServiceTest {
         battle = new Battle(new BoardSize(10, 10));
         battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P1", null);
 
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
         assertThat(actualException.getMessage()).isEqualTo("Both players must be initialised");
@@ -336,7 +311,7 @@ class BattleInitialisationServiceTest {
         battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
         battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
 
-        when(battleRepository.getBattle(battleId)).thenReturn(battle);
+        when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
         ContentException actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
         assertThat(actualException.getMessage()).isEqualTo("Player P1 still has ships to be placed");

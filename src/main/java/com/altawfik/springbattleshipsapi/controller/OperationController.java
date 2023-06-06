@@ -1,13 +1,16 @@
 package com.altawfik.springbattleshipsapi.controller;
 
 import com.altawfik.springbattleshipsapi.api.BaseResponse;
+import com.altawfik.springbattleshipsapi.api.request.PlayRoundRequest;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattlePlayService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,15 +26,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/battle")
+@RequiredArgsConstructor
 public class OperationController {
 
     private final BattleInitialisationService battleInitialisationService;
     private final BattleRetrievalService battleRetrievalService;
-
-    public OperationController(final BattleInitialisationService battleInitialisationService, final BattleRetrievalService battleRetrievalService) {
-        this.battleInitialisationService = battleInitialisationService;
-        this.battleRetrievalService = battleRetrievalService;
-    }
+    private final BattlePlayService battlePlayService;
 
     @GetMapping("/{battleId}")
     public ResponseEntity<BattleResponse> retrieveBattle(@PathVariable final UUID battleId) {
@@ -65,8 +65,14 @@ public class OperationController {
     }
 
     @PostMapping("/initialise/{battleId}/start")
-    public ResponseEntity<BaseResponse> startBattle(@PathVariable UUID battleId) {
+    public ResponseEntity<BattleResponse> startBattle(@PathVariable UUID battleId) {
         battleInitialisationService.startBattle(battleId);
-        return ResponseEntity.ok(new BaseResponse());
+        return ResponseEntity.ok(battleRetrievalService.getBattle(battleId));
+    }
+
+    @PostMapping("/play/{battleId}")
+    public ResponseEntity<BattleResponse> playRound(@PathVariable UUID battleId, @RequestBody final PlayRoundRequest playRoundRequest) {
+        battlePlayService.playRound(battleId, playRoundRequest);
+        return ResponseEntity.ok(battleRetrievalService.getBattle(battleId));
     }
 }

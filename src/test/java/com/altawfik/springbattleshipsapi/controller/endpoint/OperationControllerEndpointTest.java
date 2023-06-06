@@ -1,5 +1,6 @@
 package com.altawfik.springbattleshipsapi.controller.endpoint;
 
+import com.altawfik.springbattleshipsapi.api.request.PlayRoundRequest;
 import com.altawfik.springbattleshipsapi.api.request.PlayerNumber;
 import com.altawfik.springbattleshipsapi.api.request.PlayerSetupRequest;
 import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
@@ -13,6 +14,7 @@ import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.model.ShipOrientation;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
+import com.altawfik.springbattleshipsapi.service.BattlePlayService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
 import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +55,8 @@ public class OperationControllerEndpointTest {
     private BattleInitialisationService battleInitialisationService;
     @MockBean
     private BattleRetrievalService battleRetrievalService;
+    @MockBean
+    private BattlePlayService battlePlayService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -163,8 +167,35 @@ public class OperationControllerEndpointTest {
     public void startBattle() throws Exception {
         UUID battleId = UUID.randomUUID();
 
+        BattleResponse battleResponse = BattleResponse.builder()
+                .state(BattleStateResponse.InPlay)
+                .players(new PlayerResponse[]{new PlayerResponse("playerName", new Ship[0])}).build();
+        when(battleRetrievalService.getBattle(battleId)).thenReturn(battleResponse);
+
         mockMvc.perform(post(String.format("/battle/initialise/%s/start", battleId)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("InPlay"));
+
+        verify(battleInitialisationService).startBattle(battleId);
+    }
+
+    @Test
+    public void playRound() throws Exception {
+        UUID battleId = UUID.randomUUID();
+        var playRoundRequest = new PlayRoundRequest(PlayerNumber.PLAYER_ONE, new BoardCoordinate(1, 1));
+
+        BattleResponse battleResponse = BattleResponse.builder()
+                .state(BattleStateResponse.InPlay)
+                .players(new PlayerResponse[]{new PlayerResponse("playerName", new Ship[0])}).build();
+        when(battleRetrievalService.getBattle(battleId)).thenReturn(battleResponse);
+
+        mockMvc.perform(post(String.format("/battle/play/%s", battleId))
+                .content(asJsonString(playRoundRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("InPlay"));
+
+        verify(battlePlayService).playRound(battleId, playRoundRequest);
     }
 
     private String asJsonString(final Object obj) {

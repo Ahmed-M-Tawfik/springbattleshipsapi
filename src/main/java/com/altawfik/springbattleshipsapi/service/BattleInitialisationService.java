@@ -10,31 +10,23 @@ import com.altawfik.springbattleshipsapi.model.Player;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class BattleInitialisationService {
 
     private static final BattleState BATTLE_INIT_STATE = BattleState.Initialisation;
 
     private final BattleRepository battleRepository;
+    private final BattleValidatorRetriever battleValidatorRetriever;
     private final ShipConfigurationProvider shipConfigurationProvider;
     private final BoardPlacer boardPlacer;
     private final BoardSizeBoundsChecker boardSizeBoundsChecker;
-
-    public BattleInitialisationService(final BattleRepository battleRepository,
-                                       final ShipConfigurationProvider shipConfigurationProvider,
-                                       final BoardPlacer boardPlacer,
-                                       final BoardSizeBoundsChecker boardSizeBoundsChecker) {
-        this.battleRepository = battleRepository;
-        this.shipConfigurationProvider = shipConfigurationProvider;
-        this.boardPlacer = boardPlacer;
-        this.boardSizeBoundsChecker = boardSizeBoundsChecker;
-    }
 
     public UUID newBattle() {
         return battleRepository.newBattle();
@@ -45,7 +37,7 @@ public class BattleInitialisationService {
             throw new ContentExceptionBuilder("Invalid player name provided: " + playerSetupRequest.playerName()).build();
         }
 
-        Battle battle = validateAndRetrieveBattle(battleId);
+        Battle battle = battleValidatorRetriever.validateAndRetrieveBattle(battleId, BATTLE_INIT_STATE);
 
         battle.setPlayer(playerSetupRequest.playerNumber().ordinal(),
                                 playerSetupRequest.playerName().trim(),
@@ -53,7 +45,7 @@ public class BattleInitialisationService {
     }
 
     public Ship[] getUnplacedShips(final UUID battleId, final PlayerNumber playerNumber) {
-        Battle battle = validateAndRetrieveBattle(battleId);
+        Battle battle = battleValidatorRetriever.validateAndRetrieveBattle(battleId, BATTLE_INIT_STATE);
         Player player = battle.getPlayers()[playerNumber.ordinal()];
         Ship[] ships = player.ships();
 
@@ -61,7 +53,7 @@ public class BattleInitialisationService {
     }
 
     public void placeShipOnBoard(UUID battleId, PlayerNumber playerNumber, ShipPlacementRequest shipPlacementRequest) {
-        Battle battle = validateAndRetrieveBattle(battleId);
+        Battle battle = battleValidatorRetriever.validateAndRetrieveBattle(battleId, BATTLE_INIT_STATE);
         Ship ship = battle.getPlayers()[playerNumber.ordinal()].ships()[shipPlacementRequest.shipListIndex()];
         if(ship.isPlaced())
             throw new ContentExceptionBuilder("Ship already placed: " + ship.getShipName()).build();
@@ -79,20 +71,8 @@ public class BattleInitialisationService {
         ship.setPlaced(true);
     }
 
-    private Battle validateAndRetrieveBattle(final UUID battleId) {
-        Battle currentBattle = battleRepository.getBattle(battleId);
-        if (currentBattle == null) {
-            throw new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build();
-        }
-
-        if (!currentBattle.getState().equals(BATTLE_INIT_STATE)) {
-            throw new ContentExceptionBuilder("Invalid state for operation. Current state is " + currentBattle.getState()).build();
-        }
-        return currentBattle;
-    }
-
     public void startBattle(UUID battleId) {
-        Battle battle = validateAndRetrieveBattle(battleId);
+        Battle battle = battleValidatorRetriever.validateAndRetrieveBattle(battleId, BATTLE_INIT_STATE);
         Player[] players = battle.getPlayers();
 
         if(players[0] == null || players[1] == null) {
