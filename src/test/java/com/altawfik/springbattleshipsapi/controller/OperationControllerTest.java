@@ -8,10 +8,10 @@ import com.altawfik.springbattleshipsapi.api.request.ShipPlacementRequest;
 import com.altawfik.springbattleshipsapi.api.response.BattleResponse;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.Ship;
-import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.service.BattleInitialisationService;
 import com.altawfik.springbattleshipsapi.service.BattlePlayService;
 import com.altawfik.springbattleshipsapi.service.BattleRetrievalService;
+import com.altawfik.springbattleshipsapi.service.shipconfig.TestShipConfigurationProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,8 +101,7 @@ class OperationControllerTest {
     public void shouldReturnUnplacedShips() {
         UUID battleId = UUID.randomUUID();
         PlayerNumber playerNumber = PlayerNumber.PLAYER_ONE;
-        Ship[] expectedShips = new Ship[]{new Ship("Ship1", new ShipSection[]{}, false),
-                new Ship("Ship2", new ShipSection[]{}, false)};
+        Ship[] expectedShips = new TestShipConfigurationProvider().getShips();
 
         when(battleInitialisationService.getUnplacedShips(battleId, playerNumber)).thenReturn(expectedShips);
 

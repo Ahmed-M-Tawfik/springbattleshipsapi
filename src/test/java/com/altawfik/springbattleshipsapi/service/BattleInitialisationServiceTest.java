@@ -11,9 +11,7 @@ import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
 import com.altawfik.springbattleshipsapi.model.BoardSize;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.model.ShipOrientation;
-import com.altawfik.springbattleshipsapi.model.ShipSection;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
-import com.altawfik.springbattleshipsapi.service.shipconfig.SparseShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.service.shipconfig.TestShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
@@ -50,13 +48,13 @@ class BattleInitialisationServiceTest {
     @Mock
     private BoardSizeBoundsChecker boardSizeBoundsChecker;
 
-    private final ShipConfigurationProvider shipConfigurationProviderSpy = spy(new SparseShipConfigurationProvider());
+    private final TestShipConfigurationProvider shipConfigSpy = spy(new TestShipConfigurationProvider());
 
     @BeforeEach
     public void setUp() {
         battleInitialisationService = new BattleInitialisationService(battleRepository,
                 battleValidatorRetriever,
-                shipConfigurationProviderSpy,
+                shipConfigSpy,
                 boardPlacer,
                 boardSizeBoundsChecker);
     }
@@ -84,7 +82,7 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy).getShips();
+        verify(shipConfigSpy).getShips();
     }
 
     @Test
@@ -99,14 +97,14 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy).getShips();
+        verify(shipConfigSpy).getShips();
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_TWO, "playerName2");
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
         assertThat(battle.getPlayers()[1].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy, times(2)).getShips();
+        verify(shipConfigSpy, times(2)).getShips();
     }
 
     @Test
@@ -121,21 +119,21 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy).getShips();
+        verify(shipConfigSpy).getShips();
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName2");
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy, times(2)).getShips();
+        verify(shipConfigSpy, times(2)).getShips();
 
         playerSetupRequest = new PlayerSetupRequest(PlayerNumber.PLAYER_ONE, "playerName3");
         battleInitialisationService.initPlayer(battleId, playerSetupRequest);
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo(playerSetupRequest.playerName());
 
-        verify(shipConfigurationProviderSpy, times(3)).getShips();
+        verify(shipConfigSpy, times(3)).getShips();
     }
 
     @Test
@@ -150,7 +148,7 @@ class BattleInitialisationServiceTest {
 
         assertThat(battle.getPlayers()[0].playerName()).isEqualTo("playerName");
 
-        verify(shipConfigurationProviderSpy).getShips();
+        verify(shipConfigSpy).getShips();
     }
 
     @Test
@@ -166,7 +164,7 @@ class BattleInitialisationServiceTest {
         assertThat(actualException.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         verify(battleRepository, times(0)).getBattle(battleId);
-        verify(shipConfigurationProviderSpy, times(0)).getShips();
+        verify(shipConfigSpy, times(0)).getShips();
     }
 
     @Test
@@ -248,8 +246,7 @@ class BattleInitialisationServiceTest {
     public void getUnplacedShips() {
         UUID battleId = UUID.randomUUID();
         PlayerNumber playerNumber = PlayerNumber.PLAYER_ONE;
-        Ship[] expectedShips = new Ship[]{new Ship("Ship1", new ShipSection[]{}, false),
-                new Ship("Ship2", new ShipSection[]{}, false)};
+        Ship[] expectedShips = shipConfigSpy.getShips();
 
         Battle battle = new Battle(new BoardSize(10, 10));
         battle.setPlayer(playerNumber.ordinal(), "playerName", expectedShips);
@@ -263,13 +260,11 @@ class BattleInitialisationServiceTest {
 
     @Test
     public void startBattle_ValidBattleSetup() {
-        var shipConfig = new TestShipConfigurationProvider().setShipsPlaced();
-
         UUID battleId = UUID.randomUUID();
 
         Battle battle = new Battle(new BoardSize(10, 10));
-        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
-        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfigSpy.getPlacedShips());
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfigSpy.getPlacedShips());
 
         when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
@@ -302,14 +297,12 @@ class BattleInitialisationServiceTest {
 
     @Test
     public void startBattle_ShipsNotPlaced_ThrowsException() {
-        var shipConfig = new TestShipConfigurationProvider();
-
         UUID battleId = UUID.randomUUID();
 
         // evaluate when both P1 and P2 don't have all ships placed
         Battle battle = new Battle(new BoardSize(10, 10));
-        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
-        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfigSpy.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfigSpy.getShips());
 
         when(battleValidatorRetriever.validateAndRetrieveBattle(battleId, BattleState.Initialisation)).thenReturn(battle);
 
@@ -318,15 +311,14 @@ class BattleInitialisationServiceTest {
         assertThat(battle.getState()).isEqualTo(BattleState.Initialisation);
 
         // Now shift to evaluating P2 as P1's ships are all placed
-        shipConfig.setShipsPlaced();
-        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_ONE.ordinal(), "P1", shipConfigSpy.getPlacedShips());
 
         actualException = assertThrows(ContentException.class, () -> battleInitialisationService.startBattle(battleId));
         assertThat(actualException.getMessage()).isEqualTo("Player P2 still has ships to be placed");
         assertThat(battle.getState()).isEqualTo(BattleState.Initialisation);
 
         // Now ensure status changes and we can start battle
-        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfig.getShips());
+        battle.setPlayer(PlayerNumber.PLAYER_TWO.ordinal(), "P2", shipConfigSpy.getPlacedShips());
 
         assertDoesNotThrow(() -> battleInitialisationService.startBattle(battleId));
         assertThat(battle.getState()).isEqualTo(BattleState.InPlay);

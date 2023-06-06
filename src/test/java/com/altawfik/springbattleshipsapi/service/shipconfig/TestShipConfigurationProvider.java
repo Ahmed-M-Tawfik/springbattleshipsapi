@@ -11,26 +11,30 @@ import static com.altawfik.springbattleshipsapi.service.shipconfig.ShipConfigura
 @Service
 public class TestShipConfigurationProvider implements ShipConfigurationProvider {
 
-    private boolean shipsPlaced = false;
-
-    public TestShipConfigurationProvider setShipsPlaced() {
-        this.shipsPlaced = true;
-        return this;
-    }
-
     @Override
     public Ship[] getShips() {
-        var ships = new Ship[] {
+        return new Ship[] {
                 populateShip("Small Ship", 2),
                 populateShip("Submarine", 3),
                 populateShip("Medium Ship", 3),
                 populateShip("Large Ship", 4),
                 populateShip("Aircraft Carrier", 5)
         };
+    }
 
-        if(shipsPlaced)
-            Arrays.stream(ships).forEach(ship -> ship.setPlaced(shipsPlaced));
-
+    public Ship[] getPlacedShips() {
+        var ships = getShips();
+        Arrays.stream(ships).forEach(ship -> ship.setPlaced(true));
         return ships;
+    }
+
+    public Ship[] getPlacedAndSunkShips() {
+        var ships = getPlacedShips();
+        Arrays.stream(ships).forEach(ship -> ship.setSunk(true));
+        return ships;
+    }
+
+    public Ship getSingleShip(int numberOfShipSections) {
+        return populateShip("Some Ship", numberOfShipSections);
     }
 }

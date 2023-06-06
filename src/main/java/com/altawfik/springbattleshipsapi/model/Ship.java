@@ -11,8 +11,9 @@ public class Ship {
     private String shipName;
     private ShipSection[] shipSections;
     private boolean placed;
+    private boolean sunk;
 
     public Ship(String shipName, ShipSection[] shipSections) {
-        this(shipName, shipSections, false);
+        this(shipName, shipSections, false, false);
     }
 }
