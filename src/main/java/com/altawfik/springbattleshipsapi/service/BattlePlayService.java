@@ -7,6 +7,7 @@ import com.altawfik.springbattleshipsapi.model.Battle;
 import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.model.Board;
 import com.altawfik.springbattleshipsapi.model.BoardCoordinate;
+import com.altawfik.springbattleshipsapi.validation.BattleValidatorRetriever;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

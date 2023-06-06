@@ -1,4 +1,4 @@
-package com.altawfik.springbattleshipsapi.service;
+package com.altawfik.springbattleshipsapi.validation;
 
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentException;
 import com.altawfik.springbattleshipsapi.model.Battle;

@@ -14,6 +14,7 @@ import com.altawfik.springbattleshipsapi.model.ShipOrientation;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
 import com.altawfik.springbattleshipsapi.service.shipconfig.StandardShipConfigurationProvider;
 import com.altawfik.springbattleshipsapi.service.shipconfig.TestShipConfigurationProvider;
+import com.altawfik.springbattleshipsapi.validation.BattleValidatorRetriever;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

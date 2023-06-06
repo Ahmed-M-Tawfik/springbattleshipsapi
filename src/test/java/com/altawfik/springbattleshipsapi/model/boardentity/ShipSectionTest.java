@@ -1,6 +1,6 @@
-package com.altawfik.springbattleshipsapi.model;
+package com.altawfik.springbattleshipsapi.model.boardentity;
 
-import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
+import com.altawfik.springbattleshipsapi.model.Ship;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

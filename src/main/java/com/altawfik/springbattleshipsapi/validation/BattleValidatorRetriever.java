@@ -1,4 +1,4 @@
-package com.altawfik.springbattleshipsapi.service;
+package com.altawfik.springbattleshipsapi.validation;
 
 import com.altawfik.springbattleshipsapi.errorhandling.exception.ContentExceptionBuilder;
 import com.altawfik.springbattleshipsapi.model.Battle;
@@ -16,7 +16,7 @@ public class BattleValidatorRetriever {
 
     private final BattleRepository battleRepository;
 
-    Battle validateAndRetrieveBattle(final UUID battleId, final BattleState requiredBattleState) {
+    public Battle validateAndRetrieveBattle(final UUID battleId, final BattleState requiredBattleState) {
         Battle retrievedBattle = battleRepository.getBattle(battleId);
         if (retrievedBattle == null) {
             throw new ContentExceptionBuilder(HttpStatus.NOT_FOUND, String.format("Battle with UUID %s not found", battleId)).build();

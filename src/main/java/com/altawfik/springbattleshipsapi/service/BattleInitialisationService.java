@@ -9,6 +9,7 @@ import com.altawfik.springbattleshipsapi.model.BattleState;
 import com.altawfik.springbattleshipsapi.model.Player;
 import com.altawfik.springbattleshipsapi.model.Ship;
 import com.altawfik.springbattleshipsapi.repository.BattleRepository;
+import com.altawfik.springbattleshipsapi.validation.BattleValidatorRetriever;
 import com.altawfik.springbattleshipsapi.validation.BoardSizeBoundsChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
