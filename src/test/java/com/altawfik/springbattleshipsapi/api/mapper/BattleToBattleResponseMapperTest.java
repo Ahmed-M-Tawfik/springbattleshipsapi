@@ -1,13 +1,16 @@
 package com.altawfik.springbattleshipsapi.api.mapper;
 
 import com.altawfik.springbattleshipsapi.api.response.BoardEntityResponse;
+import com.altawfik.springbattleshipsapi.api.response.MissResponse;
 import com.altawfik.springbattleshipsapi.api.response.ShipSectionResponse;
 import com.altawfik.springbattleshipsapi.model.boardentity.BoardEntity;
+import com.altawfik.springbattleshipsapi.model.boardentity.Miss;
 import com.altawfik.springbattleshipsapi.model.boardentity.ShipSection;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -41,11 +44,8 @@ public class BattleToBattleResponseMapperTest {
 
     @Test
     public void testMapNullEntity() {
-        // Given
-        BoardEntity entity = null;
-
         // When
-        BoardEntityResponse entityResponse = mapper.map(entity);
+        BoardEntityResponse entityResponse = mapper.map((BoardEntity) null);
 
         // Then
         assertNull(entityResponse);
@@ -66,6 +66,19 @@ public class BattleToBattleResponseMapperTest {
 
         ShipSectionResponse expectedShipSectionResponse = new ShipSectionResponse(true);
         assertEquals(expectedShipSectionResponse, actualShipSectionResponse);
+    }
+
+    @Test
+    public void testMapMiss() {
+        // Given
+        Miss miss = new Miss();
+
+        // When
+        BoardEntityResponse missResponse = mapper.map(miss);
+
+        // Then
+        assertNotNull(missResponse);
+        assertInstanceOf(MissResponse.class, missResponse);
     }
 
     @Test
